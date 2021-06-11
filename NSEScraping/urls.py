@@ -18,4 +18,5 @@ from django.urls import path
 
 urlpatterns = [
     path('',views.index),
+    path('data/',views.return_option_chain)
 ]

@@ -3,9 +3,11 @@ from django.shortcuts import render
 import requests
 import json
 import time
+from . import templates
 
 
-__request_headers = {
+#Headers for NSE request
+request_headers = {
         'Host':'www.nseindia.com', 
         'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0',
         'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', 
@@ -18,25 +20,50 @@ __request_headers = {
         'Cache-Control':'no-cache',    
     }
 
-nse_url =  'https://www.nseindia.com/market-data/top-gainers-loosers'
+#option chain URL's
 opt_chain_url='https://www.nseindia.com/option-chain'
-url = 'https://www.nseindia.com/api/live-analysis-variations?index=gainers'
 op_nifty='https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY'
 
 
-def index(request):
-    resp = requests.get(url=opt_chain_url, headers=__request_headers)
-    #print(resp.content)
-    if resp.ok:
-        req_cookies = dict(nsit=resp.cookies['nsit'], nseappid=resp.cookies['nseappid'], ak_bmsc=resp.cookies['ak_bmsc'])
-        tresp = requests.get(url=op_nifty, headers=__request_headers, cookies=req_cookies)
-        result = tresp.json()
-        #print(result)
+#Method for getting  data from NSE
+def get_data():
+    #visit NSE option chain to get cookies
+    response = requests.get(url=opt_chain_url, headers=request_headers)
 
-        res_data = result["NIFTY"]["data"] if "NIFTY" in result and "data" in result["NIFTY"] else []
-        if res_data != None and len(res_data) > 0:
-            __top_list = res_data
-        #print('sucess')
+    if response.ok:
+        #Append the cookies to cookie dictinary
+        req_cookies = dict(nsit=response.cookies['nsit'], nseappid=response.cookies['nseappid'], ak_bmsc=response.cookies['ak_bmsc'])
         
-        return HttpResponse(tresp,content_type='application/json')
+        #send request with cookie
+        api_response = requests.get(url=op_nifty, headers=request_headers, cookies=req_cookies)
+        result = api_response.json()
+        
+        return result
+
+#Formatting data
+def format_data(raw_data):
+    content={}
+    first=raw_data['records']['data']
+    count=0
+    for key in first:
+        if count ==100:
+            break
+        content[str(count)]=key
+        count+=1
+    return content
+        
+#handler for home 
+def index(request):
+    context={}
+    api_response=get_data()
+    formatted_data=format_data(api_response)
+    context['data']=formatted_data
+    return render(request,'NSEScraping/index.html',context)
+    
+#handler for data return
+def return_option_chain(request):
+    api_response=get_data()
+    return HttpResponse(api_response,content_type='application/json')
+
+
 

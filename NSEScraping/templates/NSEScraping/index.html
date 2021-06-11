@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option Chain Data</title>
+</head>
+
+<body>
+    <h1>Option chain sample data</h1>
+    <button onclick="refresh()" style="width: 100px;height: 40px;margin-left: 600px;">refresh</button><br>
+    <br>
+    <table border="2px">
+        <tr>
+            <th>STRIKE
+                <BR> PRICE</th>
+            <th>EXPIRY DATE</th>
+            <th>UNDERLYING</th>
+            <th>OPTIDXNIFTY</th>
+            <th>OPENINTREST</th>
+            <TH>TOTAL
+                <BR>TRADE VOL</TH>
+            <TH>LASTPRICE</TH>
+            <TH>CHANGE</TH>
+            <TH>PCHANGE</TH>
+            <th>BID PRICE</th>
+            <th>TOT-BUY-PE</th>
+            <TH>TOT-SELL-Q</TH>
+            <TH>UNDERLYING-VAL</TH>
+        </tr>
+        {% for key,value in data.items %}
+        <tr>
+
+            <th>{{value.strikePrice }}</th>
+            <th>{{value.expiryDate}}</th>
+            <th>{{value.PE.underlying}}</th>
+            <th>{{value.PE.identifier}}</th>
+            <th>{{value.PE.openInterest}}</th>
+            <th>{{value.PE.totalTradeVolume}}</th>
+            <th>{{value.PE.lastPrice}}</th>
+            <th>{{value.PE.change}}</th>
+            <th>{{value.PE.pChange}}</th>
+            <th>{{value.PE.bidprice}}</th>
+            <th>{{value.PE.totalBuyQuantity}}</th>
+            <th>{{value.PE.totalSellQuantity}}</th>
+            <th>{{value.PE.underlyingValue}}</th>
+        </tr>
+        {% endfor %}
+
+
+    </table>
+    <BR>
+
+
+    <script>
+        function refresh() {
+            location.reload()
+
+        }
+    </script>
+</body>
+
+</html>
