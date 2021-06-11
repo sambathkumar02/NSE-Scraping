@@ -21,24 +21,31 @@ request_headers = {
     }
 
 #option chain URL's
-opt_chain_url='https://www.nseindia.com/option-chain'
+opt_chain_url='https://www.nseindia.com/option-chain' 
 op_nifty='https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY'
 
 
 #Method for getting  data from NSE
 def get_data():
-    #visit NSE option chain to get cookies
-    response = requests.get(url=opt_chain_url, headers=request_headers)
 
-    if response.ok:
-        #Append the cookies to cookie dictinary
-        req_cookies = dict(nsit=response.cookies['nsit'], nseappid=response.cookies['nseappid'], ak_bmsc=response.cookies['ak_bmsc'])
+    try:
+        #visit NSE option chain to get cookies
+        response = requests.get(url=opt_chain_url, headers=request_headers)
+
+        if response.ok:
+            #Append the cookies to cookie dictinary
+            req_cookies = dict(nsit=response.cookies['nsit'], nseappid=response.cookies['nseappid'], ak_bmsc=response.cookies['ak_bmsc'])
         
-        #send request with cookie
-        api_response = requests.get(url=op_nifty, headers=request_headers, cookies=req_cookies)
-        result = api_response.json()
+            #send request with cookie
+            api_response = requests.get(url=op_nifty, headers=request_headers, cookies=req_cookies)
+            if api_response.ok:
+                result = api_response.json()
+                return result
+    except Exception:
+        return 404
         
-        return result
+        
+        
 
 #Formatting data
 def format_data(raw_data):
@@ -56,8 +63,11 @@ def format_data(raw_data):
 def index(request):
     context={}
     api_response=get_data()
+    if api_response==404:
+        return HttpResponse("Unable to get data...Try reloading the Page")
     formatted_data=format_data(api_response)
     context['data']=formatted_data
+
     return render(request,'NSEScraping/index.html',context)
     
 #handler for data return
