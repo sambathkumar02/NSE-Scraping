@@ -4,6 +4,8 @@ import requests
 import json
 import time
 from . import templates
+import datetime
+from NSEScraping.models import data
 
 
 #Headers for NSE request
@@ -40,6 +42,12 @@ def get_data():
             api_response = requests.get(url=op_nifty, headers=request_headers, cookies=req_cookies)
             if api_response.ok:
                 result = api_response.json()
+                time_now=datetime.datetime.now()
+                records=result["records"]
+                filtered=result["filtered"]
+                data_obj=data(time=time_now,data_records=records,data_filtered=filtered)
+                data_obj.save()
+
                 return result
     except Exception:
         return 404
